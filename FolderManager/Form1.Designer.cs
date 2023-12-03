@@ -131,7 +131,6 @@
             // name
             // 
             this.name.HeaderText = "Name";
-            this.name.MinimumWidth = 200;
             this.name.Name = "name";
             this.name.Width = 280;
             // 

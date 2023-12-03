@@ -21,6 +21,21 @@ namespace FolderManager
         public Form1()
         {
             InitializeComponent();
+            if (!System.IO.File.Exists(@".\save.xlsx"))
+            {
+                using (var package = new ExcelPackage())
+                {
+                    // 在工作表中添加一個工作表
+                    var worksheet = package.Workbook.Worksheets.Add("Sheet1");
+                    // 儲存檔案
+                    package.SaveAs(new System.IO.FileInfo(@".\save.xlsx"));
+                }
+
+            }
+            if (!Directory.Exists(@".\save")) 
+            {
+                Directory.CreateDirectory(@".\save");
+            }
             clear_datagridview();
             load_all_under_save();
         }
@@ -28,6 +43,40 @@ namespace FolderManager
         private void clear_datagridview()
         {
             dataGridView1.Rows.Clear();
+        }
+
+        private string add_picture(string folder_path)
+        {
+            string picture_path = "";
+            if (Directory.Exists(folder_path))
+            {
+                // 取得資料夾中的所有圖片檔案
+                string[] imageFiles = Directory.GetFiles(folder_path, "*.*", SearchOption.TopDirectoryOnly)
+                                            .Where(s => s.EndsWith(".jpg") || s.EndsWith(".jpeg") || s.EndsWith(".png") || s.EndsWith(".gif") || s.EndsWith(".bmp") || s.EndsWith(".tiff") || s.EndsWith(".ico"))
+                                            .ToArray();
+
+                // 檢查是否有找到圖片
+                if (imageFiles.Length > 0)
+                {
+                    // 排序圖片檔案，以確保它們按照順序顯示
+                    Array.Sort(imageFiles);
+
+                    // 取得第一張圖片的路徑
+                    string firstImagePath = imageFiles[0];
+
+                    // 顯示第一張圖片的路徑
+                    picture_path = firstImagePath;
+                }
+                else
+                {
+                    MessageBox.Show("資料夾中沒有找到任何圖片檔案。");
+                }
+            }
+            else
+            {
+                MessageBox.Show("指定的資料夾不存在。");
+            }
+            return picture_path;
         }
 
         private void search_target()
@@ -56,7 +105,7 @@ namespace FolderManager
                         Image image;
 
                         // 讀取圖片到 MemoryStream
-                        using (MemoryStream memoryStream = new MemoryStream(File.ReadAllBytes(column2 + @"\1.jpg")))
+                        using (MemoryStream memoryStream = new MemoryStream(File.ReadAllBytes(add_picture(column2))))//column2 + @"\1.jpg"
                         {
                             // 將 MemoryStream 轉換為 Image
                             image = Image.FromStream(memoryStream);
@@ -194,8 +243,9 @@ namespace FolderManager
                                         //MessageBox.Show($"資料夾已存在：{folderNameToFind}，位置：{folderLocationToFind}");
                                         folderExists = true;
 
-                                        // 單張圖片路徑
-                                        string imagePath = subdirectory+"\\1.jpg";
+                                        // 單張圖片路徑add_picture(column2)
+                                        //string imagePath = subdirectory+"\\1.jpg";
+                                        string imagePath = add_picture(subdirectory);
                                         Image image ;
 
                                         // 讀取圖片到 MemoryStream
@@ -224,7 +274,8 @@ namespace FolderManager
                                 package.Save(); // 保存修改
                                 //Console.WriteLine($"已將資料夾添加到 Excel 文件：{folderNameToFind}，位置：{folderLocationToFind}");
 
-                                string imagePath = subdirectory + "\\1.jpg";
+                                //string imagePath = subdirectory + "\\1.jpg";
+                                string imagePath = add_picture(subdirectory);
                                 Image image;
 
                                 // 讀取圖片到 MemoryStream
